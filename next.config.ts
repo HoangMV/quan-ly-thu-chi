@@ -1,4 +1,6 @@
-const nextConfig: NextConfig = {
+import type { NextConfig } from "next";
+
+const nextConfig: any = {
   /* config options here */
   typescript: {
     // !! WARN !!
