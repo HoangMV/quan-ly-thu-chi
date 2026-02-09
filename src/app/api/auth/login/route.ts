@@ -5,36 +5,39 @@ import bcrypt from 'bcryptjs';
 import * as jose from 'jose';
 import { cookies } from 'next/headers';
 
-// Key bí mật dùng để mã hóa token (trong thực tế nên lưu trong .env)
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'mat_khau_bi_mat_cua_toi');
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fintrack_secret_default');
 
 export async function POST(req: Request) {
-    await dbConnect();
-
     try {
-        const { username, password } = await req.json();
+        await dbConnect();
 
-        // Tìm user trong database (lấy cả password để so sánh)
-        const user: any = await User.findOne({ username }).select('+password');
+        const { ten_dang_nhap, mat_khau } = await req.json();
+
+        // Tìm user trong database
+        const user: any = await User.findOne({ ten_dang_nhap }).select('+mat_khau');
 
         if (!user) {
             return NextResponse.json({ success: false, error: 'Tên đăng nhập không tồn tại' }, { status: 400 });
         }
 
         // So sánh mật khẩu
-        const isMatch = await bcrypt.compare(password, user.password);
+        const isMatch = await bcrypt.compare(mat_khau, user.mat_khau);
         if (!isMatch) {
-            return NextResponse.json({ success: false, error: 'Mật khẩu sai' }, { status: 400 });
+            return NextResponse.json({ success: false, error: 'Mật khẩu không chính xác' }, { status: 400 });
         }
 
         // Tạo token đăng nhập (JWT)
-        // QUAN TRỌNG: Phải convert _id sang string để tránh lỗi Buffer khi decode
-        const token = await new jose.SignJWT({ userId: user._id.toString(), username: user.username })
+        const token = await new jose.SignJWT({
+            userId: user._id.toString(),
+            ten_dang_nhap: user.ten_dang_nhap,
+            ho_ten: user.ho_ten,
+            vai_tro: user.vai_tro
+        })
             .setProtectedHeader({ alg: 'HS256' })
-            .setExpirationTime('7d') // Token hết hạn sau 7 ngày
+            .setExpirationTime('7d')
             .sign(JWT_SECRET);
 
-        // Lưu token vào Cookie của trình duyệt (HttpOnly để bảo mật)
+        // Lưu token vào Cookie
         const cookieStore = await cookies();
         cookieStore.set({
             name: 'auth_token',
@@ -43,17 +46,25 @@ export async function POST(req: Request) {
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
             path: '/',
-            maxAge: 60 * 60 * 24 * 7 // 7 ngày
+            maxAge: 60 * 60 * 24 * 7
         });
 
         return NextResponse.json({
             success: true,
             message: 'Đăng nhập thành công',
-            user: { _id: user._id, username: user.username }
+            user: {
+                _id: user._id,
+                ten_dang_nhap: user.ten_dang_nhap,
+                ho_ten: user.ho_ten,
+                anh_dai_dien: user.anh_dai_dien
+            }
         });
 
     } catch (error) {
-        console.error(error);
-        return NextResponse.json({ success: false, error: 'Lỗi đăng nhập' }, { status: 500 });
+        console.error('❌ Lỗi đăng nhập:', error);
+        return NextResponse.json({
+            success: false,
+            error: error instanceof Error ? error.message : 'Lỗi máy chủ nội bộ'
+        }, { status: 500 });
     }
 }

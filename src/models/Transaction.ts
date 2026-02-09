@@ -1,35 +1,41 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface ITransaction extends Document {
-    description: string;
-    amount: number;
-    type: 'income' | 'expense';
-    spender?: string;
-    category?: string;
-    userId: mongoose.Types.ObjectId;
-    date: Date;
+    ma_nguoi_dung: mongoose.Types.ObjectId;
+    mo_ta: string;
+    so_tien: number;
+    loai: 'income' | 'expense';
+    nguoi_chi?: string;
+    danh_muc?: string;
+    ngay_thang: Date;
     createdAt: Date;
     updatedAt: Date;
 }
 
 const TransactionSchema: Schema = new Schema(
     {
-        userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-        description: { type: String, required: true },
-        amount: { type: Number, required: true },
-        spender: { type: String },
-        type: {
+        ma_nguoi_dung: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+        mo_ta: { type: String, required: true },
+        so_tien: { type: Number, required: true },
+        nguoi_chi: { type: String },
+        loai: {
             type: String,
             enum: ['income', 'expense'],
             required: true,
         },
-        category: { type: String, default: 'Chung' },
-        date: { type: Date, default: Date.now },
+        danh_muc: { type: String, default: 'Chung' },
+        ngay_thang: { type: Date, default: Date.now },
     },
-    { timestamps: true }
+    {
+        timestamps: true,
+        collection: 'transactions'
+    }
 );
 
-const Transaction: Model<ITransaction> =
-    mongoose.models.Transaction || mongoose.model<ITransaction>('Transaction', TransactionSchema);
+if (process.env.NODE_ENV === 'development') {
+    delete mongoose.models.Transaction;
+}
+
+const Transaction: Model<ITransaction> = mongoose.model<ITransaction>('Transaction', TransactionSchema);
 
 export default Transaction;

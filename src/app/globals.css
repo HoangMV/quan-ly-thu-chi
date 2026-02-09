@@ -1,26 +1,128 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  --dark-mode: selector;
 
-@theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-primary: var(--primary);
+  --color-card: var(--card);
+  --color-border: var(--border);
+
+  --font-sans: var(--font-family);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --font-family: var(--font-inter), ui-sans-serif, system-ui;
+}
+
+.font-inter {
+  --font-family: var(--font-inter), ui-sans-serif, system-ui !important;
+  font-family: var(--font-inter), ui-sans-serif, system-ui !important;
+}
+
+.font-roboto {
+  --font-family: var(--font-roboto), ui-sans-serif, system-ui !important;
+  font-family: var(--font-roboto), ui-sans-serif, system-ui !important;
+}
+
+.font-outfit {
+  --font-family: var(--font-outfit), ui-sans-serif, system-ui !important;
+  font-family: var(--font-outfit), ui-sans-serif, system-ui !important;
+}
+
+.font-geist {
+  --font-family: var(--font-geist-sans), ui-sans-serif, system-ui !important;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui !important;
+}
+
+:root {
+  --background: #f8fafc;
+  /* slate-50 */
+  --foreground: #0f172a;
+  /* slate-900 */
+  --card: #ffffff;
+  --border: #e2e8f0;
+  /* slate-200 */
+  --primary: #4f46e5;
+}
+
+.dark {
+  --background: #020617;
+  /* slate-950 */
+  --foreground: #f8fafc;
+  /* slate-50 */
+  --card: #0f172a;
+  /* slate-900 */
+  --border: #1e293b;
+  /* slate-800 */
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-family), var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure common types of elements use the primary variable */
+.bg-primary {
+  background-color: var(--primary);
+}
+
+.text-primary {
+  color: var(--primary);
+}
+
+.border-primary {
+  border-color: var(--primary);
+}
+
+.shadow-primary {
+  --tw-shadow-color: var(--primary);
+}
+
+* {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.2s ease;
+}
+
+
+/* Custom Scrollbar for a modern look */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  /* slate-300 */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+  /* slate-400 */
+}
+
+/* Smooth layout transitions */
+.page-transition {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

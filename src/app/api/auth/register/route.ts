@@ -4,43 +4,43 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 
 export async function POST(req: Request) {
-    await dbConnect();
-
     try {
-        const { username, password } = await req.json();
+        await dbConnect();
+        const { ten_dang_nhap, mat_khau, ho_ten } = await req.json();
 
-        if (!username || !password) {
-            return NextResponse.json({ success: false, error: 'Vui lòng nhập đầy đủ tên và mật khẩu' }, { status: 400 });
+        if (!ten_dang_nhap || !mat_khau || !ho_ten) {
+            return NextResponse.json({ success: false, error: 'Vui lòng nhập đầy đủ thông tin bắt buộc' }, { status: 400 });
         }
 
-        // Kiểm tra xem username đã tồn tại chưa
-        const userExists = await User.findOne({ username });
+        // Kiểm tra xem user đã tồn tại chưa
+        const userExists = await User.findOne({ ten_dang_nhap });
         if (userExists) {
             return NextResponse.json({ success: false, error: 'Tên đăng nhập đã tồn tại' }, { status: 400 });
         }
 
         // Mã hóa mật khẩu
         const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-        // const hashedPassword = password; // Đã xóa debug
+        const hashedPassword = await bcrypt.hash(mat_khau, salt);
 
         // Tạo user mới
         const user = await User.create({
-            username,
-            password: hashedPassword
+            ten_dang_nhap,
+            mat_khau: hashedPassword,
+            ho_ten
         });
 
-        console.log("Tạo user thành công:", user._id);
-
-        // Trả về thành công
         return NextResponse.json({
             success: true,
-            message: 'Đăng ký thành công',
-            user: { _id: user._id, username: user.username }
+            message: 'Đăng ký tài khoản thành công',
+            user: {
+                _id: user._id,
+                ten_dang_nhap: user.ten_dang_nhap,
+                ho_ten: user.ho_ten
+            }
         }, { status: 201 });
 
     } catch (error) {
-        console.error("LỖI ĐĂNG KÝ CHI TIẾT:", error);
+        console.error("❌ Lỗi đăng ký:", error);
         return NextResponse.json({
             success: false,
             error: 'Lỗi server: ' + (error instanceof Error ? error.message : String(error))
